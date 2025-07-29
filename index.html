@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Hero - Learning + Game</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background: linear-gradient(to right, #fceabb, #f8b500);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .btn {
+            background: #00b894;
+            color: white;
+            padding: 12px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .badge {
+            background: gold;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        .reward {
+            font-size: 24px;
+            color: #2d3436;
+        }
+
+        .mascot {
+            width: 120px;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        #gameCanvas {
+            border: 3px solid #fff;
+            background: #74b9ff;
+            border-radius: 10px;
+            cursor: crosshair;
+            display: block;
+            margin: 20px auto;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Start Screen -->
+    <div id="startSection" class="section active">
+        <img src="https://cdn-icons-png.flaticon.com/512/3038/3038227.png" class="mascot" alt="Mascot">
+        <h1>📚 Study Hero Challenge!</h1>
+        <p>Boost your knowledge. Beat distractions. Unlock rewards!</p>
+        <button class="btn" onclick="startSession()">Enter Study Mode</button>
+    </div>
+
+    <!-- Learning Section -->
+    <div id="learningSection" class="section">
+        <h2>🎓 Level 1: Water Cycle Adventure</h2>
+        <p>Watch this animated lesson to begin your quest!</p>
+        <video width="320" height="240" controls>
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <br>
+        <button class="btn" onclick="finishLearning()">Next Challenge</button>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quizSection" class="section">
+        <h2>🧠 Quiz Round</h2>
+        <p>What powers the water cycle?</p>
+        <button class="btn" onclick="submitAnswer(true)">🌞 Sun</button>
+        <button class="btn" onclick="submitAnswer(false)">🌙 Moon</button>
+        <p id="quizResult"></p>
+    </div>
+
+    <!-- Shooting Game Section -->
+    <div id="gameSection" class="section">
+        <h2>🎯 Final Challenge: Shooting Practice!</h2>
+        <p>Hit all targets without missing a shot!</p>
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+    </div>
+
+    <!-- Reward Section -->
+    <div id="rewardSection" class="section">
+        <h2>🏅 Mission Complete!</h2>
+        <div class="badge">🎖 Gold Medal - Smart & Fast Learner</div>
+        <p class="reward">✨ +50 Points</p>
+        <p>🎉 Parent Notified! You did amazing, Study Hero!</p>
+        <button class="btn" onclick="restartGame()">Play Again</button>
+    </div>
+
+    <script>
+        function startSession() {
+            switchSection('startSection', 'learningSection');
+            alert("🔒 All distractions are now locked. Let’s learn!");
+        }
+
+        function finishLearning() {
+            switchSection('learningSection', 'quizSection');
+        }
+
+        function submitAnswer(isCorrect) {
+            const result = document.getElementById('quizResult');
+            result.innerText = isCorrect ? "✅ Correct! You're awesome!" : "❌ Oops! But you're still a hero!";
+            setTimeout(() => {
+                switchSection('quizSection', 'gameSection');
+                startShootingGame();
+            }, 2000);
+        }
+
+        function switchSection(from, to) {
+            document.getElementById(from).classList.remove('active');
+            document.getElementById(to).classList.add('active');
+        }
+
+        function notifyParent() {
+            console.log("📩 Parent Notification: Child completed today’s goal!");
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+
+        // ---------------- Shooting Game Logic -----------------
+        function startShootingGame() {
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+
+            let bullets = [];
+            let targets = [];
+            let score = 0;
+            let gameOver = false;
+
+            const gun = {
+                x: canvas.width / 2,
+                y: canvas.height - 30,
+                width: 20,
+                height: 30,
+                color: "#d63031"
+            };
+
+            function drawGun() {
+                ctx.fillStyle = gun.color;
+                ctx.fillRect(gun.x - gun.width / 2, gun.y, gun.width, gun.height);
+            }
+
+            function drawBullets() {
+                ctx.fillStyle = "#fff";
+                bullets.forEach(b => {
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            function drawTargets() {
+                ctx.fillStyle = "#fdcb6e";
+                targets.forEach(t => {
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            function drawScore() {
+                ctx.fillStyle = "#fff";
+                ctx.font = "20px Arial";
+                ctx.fillText("Score: " + score, 20, 30);
+            }
+
+            function drawGameOver() {
+                ctx.fillStyle = "#d63031";
+                ctx.font = "40px Arial";
+                ctx.fillText("Game Over!", canvas.width / 2 - 120, canvas.height / 2);
+                ctx.font = "25px Arial";
+                ctx.fillText("Final Score: " + score, canvas.width / 2 - 85, canvas.height / 2 + 40);
+                setTimeout(() => {
+                    switchSection('gameSection', 'rewardSection');
+                    notifyParent();
+                }, 2500);
+            }
+
+            function shootBullet(x, y) {
+                bullets.push({
+                    x,
+                    y,
+                    speed: 7
+                });
+            }
+
+            function updateBullets() {
+                bullets.forEach(b => b.y -= b.speed);
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    if (bullets[i].y < 0) {
+                        gameOver = true;
+                        return;
+                    }
+                }
+            }
+
+            function updateTargets() {
+                targets.forEach(t => t.x += t.speed);
+                targets.forEach(t => {
+                    if (t.x <= t.radius || t.x >= canvas.width - t.radius) {
+                        t.speed *= -1;
+                    }
+                });
+            }
+
+            function detectCollisions() {
+                for (let bi = bullets.length - 1; bi >= 0; bi--) {
+                    const b = bullets[bi];
+                    for (let ti = targets.length - 1; ti >= 0; ti--) {
+                        const t = targets[ti];
+                        const dx = b.x - t.x;
+                        const dy = b.y - t.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < t.radius + 5) {
+                            bullets.splice(bi, 1);
+                            targets.splice(ti, 1);
+                            score++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            function spawnTarget() {
+                const radius = 20;
+                const x = Math.random() * (canvas.width - 2 * radius) + radius;
+                const y = Math.random() * 200 + 20;
+                const speed = Math.random() > 0.5 ? 2 : -2;
+                targets.push({
+                    x,
+                    y,
+                    radius,
+                    speed
+                });
+            }
+
+            canvas.addEventListener("click", () => {
+                if (!gameOver) {
+                    shootBullet(gun.x, gun.y);
+                }
+            });
+
+            for (let i = 0; i < 5; i++) spawnTarget();
+            setInterval(() => {
+                if (!gameOver) spawnTarget();
+            }, 3000);
+
+            function gameLoop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (gameOver) {
+                    drawGameOver();
+                    return;
+                }
+
+                drawGun();
+                drawBullets();
+                drawTargets();
+                drawScore();
+
+                updateBullets();
+                updateTargets();
+                detectCollisions();
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            gameLoop();
+        }
+    </script>
+</body>
+
+</html>
